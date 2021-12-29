@@ -1,7 +1,3 @@
-var partiler = ['TDP','MDP','TKPYG','UBP','DP','YDP','HP','CTP','Bağımsızlar'];
-var bolgeler = ['Lefkoşa','Gazimağusa','Girne','Güzelyurt','İskele','Lefke'];
-var karma = [[8,16],[6,13],[5,10],[2,4],[2,5],[1,2]];
-
 var oylar = [];
 var oyTuru;
 var oySayisi;
@@ -351,7 +347,7 @@ $(document).ready(function() {
             mesajYaz();
         }
     });
-    $("#disclaimer").html('<p>Bu site, 2018 KKTC Cumhuriyet Meclisi seçimlerinde seçmene yardımcı olmak amacıyla hazırlanmıştır. Hiçbir şekilde veri saklamamakta ve paylaşmamaktadır. Ayrıca, hiçbir şekilde resmi değer taşımamaktadır. Elde edilen sonuçların ilgili kanun/tüzük maddeleriyle uyuşmaması veya seçmeni yanlış yönlendirmesi halinde bu sitenin yapımcısı hiçbir şekilde bundan sorumlu tutulamaz.</p>');
+    $("#disclaimer").html('<p>Bu site, 2022 KKTC Cumhuriyet Meclisi seçimlerinde seçmene yardımcı olmak amacıyla hazırlanmıştır. Hiçbir şekilde veri saklamamakta ve paylaşmamaktadır. Ayrıca, hiçbir şekilde resmi değer taşımamaktadır. Elde edilen sonuçların ilgili kanun/tüzük maddeleriyle uyuşmaması veya seçmeni yanlış yönlendirmesi halinde bu sitenin yapımcısı hiçbir şekilde bundan sorumlu tutulamaz.</p>');
     layOutTable();
     oyTemizle();
 });
