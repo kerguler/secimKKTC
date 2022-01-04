@@ -8,6 +8,7 @@ var adaylar = {"UBP": {"Gazimağusa": ["Sunat Atun", "Oğuzhan Hasipoğlu", "Res
 var partiler = ['CTP','HP','UBP','DP','TDP','BY','YDP','TKPYG','Bağımsızlar'];
 var bolgeler = ['Lefkoşa','Gazimağusa','Girne','Güzelyurt','İskele','Lefke'];
 var karma = [[8,16],[6,13],[5,11],[1,3],[2,5],[1,2]];
+var yeterli_karma = [23,50];
 var adaylar = {
     "BY": {
         "Gazimağusa": ["Sabahat Aydıç", "Yusuf Bülent Yüksel", "Sevgül Uzkan", "Hüseyin Akçengel", "Melisa Koloz", "Ahmet Güvenler", "Serap Kedi", "Hilmi Buruk", "Umut Ersoy", "Hasan Çağın Tezbaşar", "Cenk Tuncay", "Arif Bayraktar", "Tağmaç Özberk"],

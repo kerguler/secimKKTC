@@ -16,7 +16,7 @@ var mesajlar = {
     'FAZLA_MUHUR': [false, "Birden fazla mühür vurduğunuz için oyunuz geçersizdir"],
     'KARISIK_TERCIH' : [false, "Mühür vurup başka bir partiden veya bağımsız adaylardan tercih yaptınız"],
     'TEK_PARTILI_TERCIH' : [false, "Karma oyunuzu farklı partilerden (veya bağımsızlardan) kullanmalısınız"],
-    'YETERSIZ_TERCIH' : [false, "En az 24, en fazla 50 tercih yapmalısınız"],
+    'YETERSIZ_TERCIH' : [false, "En az "+String(yeterli_karma[0])+", en fazla "+String(yeterli_karma[1])+" tercih yapmalısınız"],
     'YETERSIZ_KARMA' : [false, "Karma oyunuzu bir veya birden fazla bölgede ya yetersiz ya da fazla kullandınız"],
     'YETERSIZ_BOLGE' : [false, "Tercihinizi bir veya birden fazla bölgede ya yetersiz ya da fazla kullandınız"]
 };
@@ -98,7 +98,7 @@ function muhurTekPartiye() {
 }
 
 function yeterliKarma(toplam) {
-    return toplam>=24 && toplam<=50;
+    return toplam>=yeterli_karma[0] && toplam<=yeterli_karma[1];
 }
 
 function gecerliOy(oy) {
