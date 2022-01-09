@@ -1,0 +1,57 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+    <head>
+        <title></title>
+        <meta charset="UTF-8">
+        <script type = "text/javascript" src = "js/vue.min.js"></script>
+        <link href="css/default.css?ver0.3.0" rel="stylesheet"/>
+        <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway">
+    </head>
+    <body>
+        <div id = "parti-container">
+            <div v-bind:class="{'status-bar':true, 'gecerli':gecerli_pusula}">
+                <ol>
+                    <li>Mühür: {{ hangiMuhur() }}</li>
+                    <li>Toplam tercih: {{ oy_listesi.length }}</li>
+                    <li><span>{{ not }}</span></li>
+                </ol>
+            </div>
+            <div id="parti-details">
+                <div class="nav-buttons">
+                </div>
+                <ol class="parti-container-list">
+                    <li v-for = "parti in parti_listesi" 
+                        v-bind:class = "{'parti-container-li':true, 'hidden':!focuParti(parti)}">
+                        <span v-on:click = "previousParti(1)" 
+                        v-bind:class = "{'nav-left':true, 'hidden':!previousParti(0)}"> < </span>
+                        <span v-on:click = "nextParti(1)" 
+                        v-bind:class = "{'nav-right':true, 'hidden':!nextParti(0)}"> > </span>
+                        <div v-bind:class = "{'parti':true, 'enabled':partiMi(parti), 'muhur':muhurVarMi(parti), 'gecerli':gecerliMuhur()}" 
+                             v-on:click = "muhurAddRemove(parti)">
+                            {{ parti }}
+                        </div>
+                        <ol class="bolge-container-list">
+                            <li v-for = "sehir in sehir_listesi">
+                                <div v-on:click = "focuSehir(sehir)"
+                                      v-bind:class = "{'sehir-adi':true, 'secilmis':getOzetteParti(sehir,parti)>0}">
+                                      {{ fcs_sehir[sehir] ? "-" : "+" }} {{ sehir }} <span class="sehir-stats">[{{ karma_sehir[sehir][0] }}-{{ karma_sehir[sehir][1] }}] {{ getOzetteParti(sehir,parti) }}/{{ tercih_ozeti[sehir]['tercih_toplami'] }}</span>
+                                </div>
+                                <ol v-bind:class = "{'aday-container-list':true, 'hidden':!fcs_sehir[sehir]}">
+                                    <li v-for = "aday in aday_listesi[parti][sehir]" 
+                                        v-bind:class = "{'aday':true, 'secilmis':secilmisMi(parti,sehir,aday), 'gecerli':gecerliAday(parti,sehir,aday)}" 
+                                        v-on:click = "oyAddRemove(parti,sehir,aday)">
+                                        <span>{{ aday }}</span>
+                                    </li>
+                                </ol>
+                            </li>
+                        </ol>
+                    </li>
+                </ol>
+            </div>
+        </div>
+        <script type = "text/javascript" src = "js/adaylar.js?ver0.2.6"></script>
+        <script type = "text/javascript" src = "js/main.js"></script>
+    </body>
+</html>
+

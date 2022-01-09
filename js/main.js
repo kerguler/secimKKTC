@@ -73,7 +73,8 @@ function karmaSehirGecerli(b) {
     });
     var sum = 0;
     $.each(parti,function(i,d){sum+=d;});
-    return sum>1 || (bolgetercihleri.length==1 && b==bolgeler.indexOf('Lefke'));
+    // return sum>1 || (bolgetercihleri.length==1 && b==bolgeler.indexOf('Lefke'));
+    return sum>1 || (bolgetercihleri.length==1 && Math.floor(0.5*adaylar[partiler[0]][bolgeler[b]].length)==1);
 }
 
 function gecerliSehir(oy,tam=false) {
