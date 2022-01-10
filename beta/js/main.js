@@ -35,11 +35,24 @@ var partVue = new Vue({
     },
     methods: {
         gecerliAday: function(parti,sehir,aday) {
+            if (this.gecerli_pusula == false) {
+                return false;
+            }
             addRemove(this.gecerli_aday,[parti,sehir]);
             return this.gecerli_aday[parti][sehir].hasOwnProperty(aday) && this.gecerli_aday[parti][sehir][aday];
         },
         gecerliMuhur: function() {
             return this.gecerli_pusula;
+        },
+        hepsiGecerlisiz: function(gecerli,sehir="") {
+            var j;
+            for (j=0; j<this.oy_listesi.length; j++) {
+                var oy = this.oy_listesi[j];
+                if (sehir=="" || oy['sehir']==sehir) {
+                    addRemove(this.gecerli_aday,[oy['parti'],oy['sehir']]);
+                    this.gecerli_aday[oy['parti']][oy['sehir']][oy['aday']] = gecerli;
+                }
+            }
         },
         oyKontrol: function() {
             if (this.muhur=="" && this.oy_listesi.length==0) {
@@ -68,14 +81,7 @@ var partVue = new Vue({
                         if (this.tercih_ozeti[sehir]['tercih_toplami']==0) { continue; }
                         var gecerli = this.tercih_ozeti[sehir]['tercih_toplami']==this.karma_sehir[sehir][0];
                         if (!gecerli) { bazi=true; }
-                        var j;
-                        for (j=0; j<this.oy_listesi.length; j++) {
-                            var oy = this.oy_listesi[j];
-                            if (oy['sehir']==sehir) {
-                                addRemove(this.gecerli_aday,[oy['parti'],oy['sehir']]);
-                                this.gecerli_aday[oy['parti']][oy['sehir']][oy['aday']] = gecerli;
-                            }
-                        }
+                        this.hepsiGecerlisiz(gecerli,sehir);
                     }
                     this.gecerli_pusula = true;
                     if (bazi) {
@@ -86,8 +92,40 @@ var partVue = new Vue({
                 }
             } else {
                 /* Karma */
-                this.gecerli_pusula = false;
-                this.not = "Az sonra";
+                if (this.oy_listesi.length < this.karma_limit[0]) {
+                    this.gecerli_pusula = false;
+                    this.not = "En az "+String(this.karma_limit[0])+" tercih yapmalısınız";
+                } else if (this.oy_listesi.length > this.karma_limit[1]) {
+                    this.gecerli_pusula = false;
+                    this.not = "En fazla "+String(this.karma_limit[1])+" tercih yapabilirsiniz";
+                } else {
+                    gecersiz_sehir = [];
+                    var i;
+                    for (i=0; i<this.sehir_listesi.length; i++) {
+                        var sehir = this.sehir_listesi[i];
+                        if (this.tercih_ozeti[sehir]['tercih_toplami']==0) { continue; }
+                        if (this.tercih_ozeti[sehir]['tercih_toplami'] < this.karma_sehir[sehir][0]) {
+                            gecersiz_sehir.push([sehir,0]);
+                        } else if (this.tercih_ozeti[sehir]['tercih_toplami'] > this.karma_sehir[sehir][1]) {
+                            gecersiz_sehir.push([sehir,1]);
+                        } else if (Object.keys(this.tercih_ozeti[sehir]).length == 2 && 
+                                   (this.karma_sehir[sehir][0] > 1 || this.tercih_ozeti[sehir]['tercih_toplami'] > 1)) { // tercih_toplami + 1 parti + 1 tercih
+                            gecersiz_sehir.push([sehir,2]);
+                        }
+                    }
+                    if (gecersiz_sehir.length > 0) {
+                        this.gecerli_pusula = false;
+                        this.not = "";
+                        var j;
+                        for (j=0; j<gecersiz_sehir.length; j++) {
+                            this.not += gecersiz_sehir[j][0]+" bölgesinde "+(["az","fazla","tek partili"][gecersiz_sehir[j][1]])+" tercih yaptınız<br/>";
+                        }
+                    } else {
+                        this.hepsiGecerlisiz(true);
+                        this.gecerli_pusula = true;
+                        this.not = "Oyunuz geçerlidir";
+                    }
+                }
             }
         },
         focuSehir: function(sehir) {
