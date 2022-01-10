@@ -11,13 +11,17 @@
     <body>
         <div id = "parti-container" v-bind:style="{'zoom':zoom}">
             <div v-bind:class="{'status-bar':true, 'gecerli':gecerli_pusula}">
-                <div class="print-form" v-on:click="print">Yazdır</div>
-                <ol>
-                    <li>Mühür: {{ hangiMuhur() }}</li>
-                    <li>Tercih: {{ oy_listesi.length }}</li>
-                    <li><span class="status-not" v-html="not"></span></li>
+                <ol class="status-wrap">
+                    <li class="status-bar-li1"><ol class="status-bar-ol">
+                        <li>Mühür: {{ hangiMuhur() }}</li>
+                        <li>Tercih: {{ oy_listesi.length }}</li>
+                        <li><span class="status-not" v-html="not"></span></li>
+                    </ol></li>
+                    <li class="status-bar-li2"><ol class="status-buttons">
+                    <li class="print-form" v-on:click="print">Yazdır</li>
+                    <li class="clear-form" v-on:click="clearPage">Temizle</li>
+                    </ol></li>
                 </ol>
-                <div class="clear-form" v-on:click="clearPage">Temizle</div>
             </div>
             <div id="parti-details">
                 <div class="nav-buttons">
