@@ -49,6 +49,10 @@ var partVue = new Vue({
             }
         },
         print: function() {
+            if (this.gecerli_pusula == false) {
+                alert("Oyunuz geçerli değil");
+                return;
+            }
             var opened = window.open("");
             var that = this;
             var html = "<ol style='list-style:none; font-family: monospace, sans-serif;'><li>Mühür --- "+this.hangiMuhur()+"</li>";
