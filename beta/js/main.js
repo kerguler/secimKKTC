@@ -43,6 +43,35 @@ var partVue = new Vue({
         window.removeEventListener("resize", this.resize);
     },
     methods: {
+        clearPage: function() {
+            if (confirm("Sayfayı temizlemek istediğinizden emin misiniz?")) {
+                this.emptyOylar();
+            }
+        },
+        print: function() {
+            var opened = window.open("");
+            var that = this;
+            var html = "<ol style='list-style:none; font-family: monospace, sans-serif;'><li>Mühür --- "+this.hangiMuhur()+"</li>";
+            var oylar = {};
+            this.oy_listesi.forEach(function(oy) {
+                addRemove(oylar,[oy['parti'],oy['sehir'],oy['aday']]);
+            });
+            this.parti_listesi.forEach(function(parti) {
+                that.sehir_listesi.forEach(function(sehir) {
+                    if (!that.aday_listesi[parti].hasOwnProperty(sehir)) { return; }
+                    that.aday_listesi[parti][sehir].forEach(function(aday,index) {
+                        if (oylar.hasOwnProperty(parti) &&
+                            oylar[parti].hasOwnProperty(sehir) && 
+                            oylar[parti][sehir].hasOwnProperty(aday) &&
+                            that.gecerliAday(parti,sehir,aday)) {
+                                html += "<li>Tercih --- "+parti+" --- "+sehir+" --- "+String(index+1)+". "+aday+"</li>";
+                        }
+                    })
+                })
+            })
+            html += "</ol>";
+            opened.document.write("<html><head><title>KKTC Seçimler</title></head><body>"+html+"</body></html>");
+        },
         resize: function(e) {
             var that = this;
             if (this.zoom_timeout) { return; }
@@ -50,7 +79,6 @@ var partVue = new Vue({
                 that.zoom = Math.min(2.0, document.documentElement.clientWidth / that.width);
                 clearTimeout(that.zoom_timeout);
                 that.zoom_timeout = false;
-                console.log(that.zoom);
             }, 100);
         },
         gecerliAday: function(parti,sehir,aday) {
