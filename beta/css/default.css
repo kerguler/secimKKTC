@@ -1,6 +1,7 @@
 body {
     cursor: default;
     font-family: "Raleway", sans-serif;
+    background-color: whitesmoke;
     /* no select */
     -webkit-touch-callout: none; /* iOS Safari */
       -webkit-user-select: none; /* Safari */
@@ -12,7 +13,7 @@ body {
 }
 
 #parti-container {
-    max-width: 375px;
+    width: 320px;
     cursor: default;
     margin-left: auto;
     margin-right: auto;
@@ -25,16 +26,15 @@ body {
 
 #parti-details {
     width: 100%;
-    height: 80%;
     overflow: scroll;
     font-family: monospace, sans-serif;
 }
 
 .status-bar {
     width: 100%;
-    height: 20%;
     overflow: scroll;
     background-color: lightcoral;
+    padding-bottom: 5px;
 }
 
 .status-bar.gecerli {
@@ -45,6 +45,17 @@ body {
     list-style: none;
     margin: 0;
     margin-top: 2px;
+    padding-left: 20px;
+}
+
+.status-bar ol li {
+    margin-left: 0;
+    padding-right: 20px;
+}
+
+.status-not {
+    font-style: italic;
+    font-size: 0.85em;
 }
 
 .nav-left,
@@ -57,11 +68,6 @@ body {
     border-radius: 5px;
     cursor: pointer;
     font-size: 1.4em;
-}
-
-.nav-left:hover,
-.nav-right:hover {
-    background-color: aquamarine;
 }
 
 .nav-left {
@@ -84,7 +90,7 @@ body {
     display: flex;
     margin: 0;
     list-style: none;
-    padding-left: 10px;
+    padding-left: 0px;
     width: 100%;
 }
 
@@ -103,10 +109,6 @@ body {
 
 .parti.enabled {
     cursor: pointer;
-}
-
-.parti.enabled:hover {
-    background-color: aquamarine;
 }
 
 .bolge-container {
@@ -143,14 +145,6 @@ body {
     background-color: palegreen;
 }
 
-.aday.secilmis.gecerli:hover,
-.aday:hover,
-.aday.secilmis:hover,
-.muhur:hover,
-.muhur.gecerli:hover {
-            background-color: aquamarine;
-}
-
 .muhur {
     background-color: lightcoral;
 }
@@ -169,5 +163,5 @@ body {
 }
 
 .sehir-adi.secilmis {
-    background-color: rgb(158, 247, 238);
+    background-color: silver;
 }

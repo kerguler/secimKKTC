@@ -31,9 +31,28 @@ var partVue = new Vue({
         fcs_sehir: focus_sehir,
         not: "",
         gecerli_pusula: false,
-        gecerli_aday: {}
+        gecerli_aday: {},
+        zoom: 1.0,
+        zoom_timeout: false,
+        width: 320
+    },
+    created() {
+        window.addEventListener("resize", this.resize);
+    },
+    destroyed() {
+        window.removeEventListener("resize", this.resize);
     },
     methods: {
+        resize: function(e) {
+            var that = this;
+            if (this.zoom_timeout) { return; }
+            this.zoom_timeout = setTimeout(function() { 
+                that.zoom = Math.min(2.0, document.documentElement.clientWidth / that.width);
+                clearTimeout(that.zoom_timeout);
+                that.zoom_timeout = false;
+                console.log(that.zoom);
+            }, 100);
+        },
         gecerliAday: function(parti,sehir,aday) {
             if (this.gecerli_pusula == false) {
                 return false;
@@ -162,6 +181,7 @@ var partVue = new Vue({
             this.parti_ozeti = {};
             this.gecerli_aday = {};
             this.oyKontrol();
+            this.resize();
         },
         oyAddRemove: function(parti,sehir,aday) {
             var i = this.indexOf(parti,sehir,aday);
