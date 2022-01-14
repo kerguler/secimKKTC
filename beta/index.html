@@ -14,7 +14,8 @@
                 <ol class="status-wrap">
                     <li class="status-bar-li1"><ol class="status-bar-ol">
                         <li>Mühür: {{ hangiMuhur() }}</li>
-                        <li>Tercih: {{ oy_listesi.length }}</li>
+                        <li>Geçerli tercih: {{ gecerliAdaySay() }}</li>
+                        <li>Toplam tercih: {{ oy_listesi.length }}</li>
                         <li><span class="status-not" v-html="not"></span></li>
                     </ol></li>
                     <li class="status-bar-li2"><ol class="status-buttons">
@@ -40,8 +41,8 @@
                         <ol class="bolge-container-list">
                             <li v-for = "sehir in sehir_listesi">
                                 <div v-on:click = "focuSehir(sehir)"
-                                      v-bind:class = "{'sehir-adi':true, 'secilmis':getOzetteParti(sehir,parti)>0}">
-                                      {{ fcs_sehir[sehir] ? "-" : "+" }} {{ sehir }} <span class="sehir-stats">[{{ karma_sehir[sehir][0] }}-{{ karma_sehir[sehir][1] }}] {{ getOzetteParti(sehir,parti) }}/{{ tercih_ozeti[sehir]['tercih_toplami'] }}</span>
+                                      v-bind:class = "{'sehir-adi':true, 'secilmis':toplamTercih(parti,sehir)>0}">
+                                      {{ fcs_sehir[sehir] ? "-" : "+" }} {{ sehir }} <span class="sehir-stats">[{{ karma_sehir[sehir][0] }}-{{ karma_sehir[sehir][1] }}] {{ toplamTercih(parti,sehir) }}/{{ toplamTercih("",sehir) }}</span>
                                 </div>
                                 <ol v-bind:class = "{'aday-container-list':true, 'hidden':!fcs_sehir[sehir]}">
                                     <li v-for = "aday in aday_listesi[parti][sehir]" 
@@ -55,9 +56,11 @@
                     </li>
                 </ol>
             </div>
+            <div class="date">15/01/2022 tarihinde yenilenmiştir.</div>
+            <div class="disclaimer">Bu site, 2022 KKTC Cumhuriyet Meclisi seçimlerinde seçmene yardımcı olmak amacıyla hazırlanmıştır. Hiçbir şekilde veri saklanmaz ve paylaşılmaz. Ayrıca, hiçbir şekilde resmi değer taşımaz. Elde edilen sonuçların ilgili kanun/tüzük maddeleriyle uyuşmaması veya seçmeni yanlış yönlendirmesi halinde bu sitenin yapımcısı hiçbir şekilde bundan sorumlu tutulamaz.</div>
         </div>
+        <div class="email"><img src="img/email.png"/></div>
         <script type = "text/javascript" src = "js/adaylar.js?ver0.2.6"></script>
         <script type = "text/javascript" src = "js/main.js"></script>
     </body>
 </html>
-
