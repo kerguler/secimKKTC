@@ -1,355 +1,288 @@
-var oylar = [];
-var oyTuru;
-var oySayisi;
-var goySayisi;
-
-var MUHUR_TERCIH = 0;
-var KARMA = 1;
-
-var tercih = MUHUR_TERCIH;
-
-var muhur_gecersiz = false;
-var tercih_gecersiz = false;
-
-var mesajlar = {
-    'OY_YOK' : [false, "Oy kullanmadınız"],
-    'FAZLA_MUHUR': [false, "Birden fazla mühür vurduğunuz için oyunuz geçersizdir"],
-    'KARISIK_TERCIH' : [false, "Mühür vurup başka bir partiden veya bağımsız adaylardan tercih yaptınız"],
-    'TEK_PARTILI_TERCIH' : [false, "Karma oyunuzu farklı partilerden (veya bağımsızlardan) kullanmalısınız"],
-    'YETERSIZ_TERCIH' : [false, "En az "+String(yeterli_karma[0])+", en fazla "+String(yeterli_karma[1])+" tercih yapmalısınız"],
-    'YETERSIZ_KARMA' : [false, "Karma oyunuzu bir veya birden fazla bölgede ya yetersiz ya da fazla kullandınız"],
-    'YETERSIZ_BOLGE' : [false, "Tercihinizi bir veya birden fazla bölgede ya yetersiz ya da fazla kullandınız"]
-};
-
-var flagA = true;
-var flagB = true;
-
-function getId(i) {
-    return i.toString(16);
-}
-
-function getAdayId(i,j,k) {
-    return getId(i)+getId(j)+getId(k);
-}
-
-function mesajTemizle() {
-    $.each(mesajlar,function(key,value){ value[0] = false; });
-    $('#messages').html('');
-}
-
-function mesajYaz() {
-    var msg = $('#messages').append($('<ul></ul>'));
-    $.each(mesajlar,function(key,value){
-        if (value[0])
-            msg.append($('<li>'+value[1]+'</li>'));
+function addRemove(dict,keys) {
+    keys.forEach(function(k) {
+        if (!dict.hasOwnProperty(k)) { dict[k] = {}; }
+        dict = dict[k];
     });
 }
 
-function oyTopla() {
-    oylar = $( ".oylar:checked" ).map(function(i,elm){
-        return elm.value.toString();
-    });
-}
+var focus_sehir = {};
+bolgeler.forEach(function(sehir) {
+    focus_sehir[sehir] = false;
+})
 
-function toplamTercih() {
-    return oylar.filter(function(i,d){return d.length == 3;}).length;
-}
-
-function tercihSayisi(p,b) {
-    return adaylar[partiler[p]][bolgeler[b]].length == 1 ? 1 : Math.floor(0.5*adaylar[partiler[p]][bolgeler[b]].length);
-}
-
-function tercihlerAyniPartiden() {
-    return oylar.length && $(oylar).filter(function(i,d){return d.charAt(0)==oylar[0].charAt(0);}).length == oylar.length;
-}
-
-function karmaSehirGecerli(b) {
-    var parti = $(partiler).map(function(i,d){return 0;});
-    var bolgetercihleri = $(oylar).filter(function(i,d){
-        return d.length==3 && d.charAt(1)==b;
-    });
-    bolgetercihleri.each(function(i,d){
-        parti[parseInt(d.charAt(0))] = 1;
-    });
-    var sum = 0;
-    $.each(parti,function(i,d){sum+=d;});
-    // return sum>1 || (bolgetercihleri.length==1 && b==bolgeler.indexOf('Lefke'));
-    return sum>1 || (bolgetercihleri.length==1 && Math.floor(0.5*adaylar[partiler[0]][bolgeler[b]].length)==1);
-}
-
-function gecerliSehir(oy,tam=false) {
-    var p = parseInt(oy.charAt(0));
-    var b = parseInt(oy.charAt(1));
-    var l = $(oylar).filter(function(i,d){
-        return parseInt(d.charAt(1))==b;
-    }).length;
-    if (tam) {
-        return l == tercihSayisi(p,b);
-    } else {
-        return karmaSehirGecerli(b) && l >= karma[b][0] && l<= karma[b][1];
-    }
-}
-
-function muhurVar() {
-    return ($(oylar).filter(function(i,d){return d.length == 1;}).length >= 1);
-}
-
-function muhurTekPartiye() {
-    return ($(oylar).filter(function(i,d){return d.length == 1;}).length == 1);
-}
-
-function yeterliKarma(toplam) {
-    return toplam>=yeterli_karma[0] && toplam<=yeterli_karma[1];
-}
-
-function gecerliOy(oy) {
-    if (oy.length==1) // Muhur
-        return !muhur_gecersiz;
-    // Tercih
-    if (tercih_gecersiz)
-        return false;
-    var gecerli;
-    if (tercih == KARMA) { // Karma
-        gecerli = gecerliSehir(oy,false);
-        if (!gecerli)
-            mesajlar['YETERSIZ_KARMA'][0] = true;
-        return gecerli;
-    }
-    // Muhur + tercih
-    gecerli = gecerliSehir(oy,true)
-    if (!gecerli)
-        mesajlar['YETERSIZ_BOLGE'][0] = true;
-    return gecerli;
-}
-
-function tercihSay(e) {
-    oyTopla();
-    var tmp = toplamTercih();
-    oySayisi.html(tmp?tmp:'Yok');
-}
-
-function oyKontrol() {
-    oyTopla();
-    $('.parti-container-list').css("background-color","transparent");
-    $('.aday').css("background-color","transparent");
-    //
-    muhur_gecersiz = false;
-    tercih_gecersiz = false;
-    var tmp = toplamTercih();
-    if (oylar.length == 0) {
-        mesajlar['OY_YOK'][0] = true;
-        oyTuru.html('Boş');
-        oySayisi.html('Yok');
-    } else if (muhurVar()) { // Muhur
-        tercih = MUHUR_TERCIH;
-        if (!muhurTekPartiye()) {
-            muhur_gecersiz = true;
-            mesajlar['FAZLA_MUHUR'][0] = true;
-            oyTuru.html('Geçersiz');
-            oySayisi.html(tmp?tmp:'Yok');
-        } else if (!tercihlerAyniPartiden()) {
-            tercih_gecersiz = true;
-            mesajlar['KARISIK_TERCIH'][0] = true;
-            oyTuru.html('Mühür');
-            oySayisi.html(tmp?tmp:'Yok');
-        } else {
-            oyTuru.html('Mühür'+(tmp?'+Tercih':''));
-            oySayisi.html(tmp?tmp:'Yok');
-        }
-    } else {
-        tercih = KARMA;
-        oySayisi.html(tmp?tmp:'Yok');
-    }
-    //
-    var gecerlitercih = 0;
-    $(oylar).each(function(i,oy){
-        var t = gecerliOy(oy);
-        if (t && oy.length==3)
-            gecerlitercih += 1;
-    });
-    if (tercih == KARMA) {
-        if (!yeterliKarma(gecerlitercih)) {
-            tercih_gecersiz = true;
-            gecerlitercih = 0;
-            mesajlar['YETERSIZ_TERCIH'][0] = true;
-            oyTuru.html('Geçersiz');
-        } else {
-            oyTuru.html('Karma');
-        }
-    }
-    if (tercih==MUHUR_TERCIH)
-        oyTuru.html('Mühür'+(gecerlitercih?'+Tercih':''));
-    goySayisi.html(gecerlitercih?gecerlitercih:'Yok');
-    //
-    $(oylar).each(function(i,oy){
-        $('#box-'+oy).css("background-color",gecerliOy(oy)?'#66c2a5':'#fc8d62');
-    });
-}
-
-function layOutTable() {
-    var table;
-    var row;
-    var roww = 250;
-    table = $('<table width="'+(roww*partiler.length)+'px"><body></body></table>');
-    row = $('<tr></tr>');
-    $(partiler).each(function(i,p){
-        if (!(p in adaylar))
-            return;
-        var id = getId(i);
-        var parti_container = $('<td width="'+roww+'px" class="parti-container-list" id="box-'+id+'"></td>');
-        if (p=='Bağımsızlar')
-            parti_container.append($('<span>'+p+'</span>'));
-        else {
-            var tmp = $('<input class="oylar" type="checkbox" id="oy-'+id+'" name="oy-'+id+'" value="'+id+'"> '+p+'</input>');
-            parti_container.append(tmp);
-        }
-        row.append(parti_container);
-    });
-    table.append(row);
-    $(bolgeler).each(function(j,b){
-        row = $('<tr></tr>');
-        $(partiler).each(function(i,p){
-            if (!(b in adaylar[p])) {
-                row.append($('<td width="'+roww+'px"></td>'));
+var partVue = new Vue({
+    el: '#parti-container',
+    data: {
+        parti_listesi: partiler,
+        sehir_listesi: bolgeler,
+        aday_listesi: adaylar,
+        karma_sehir: karma_bolge,
+        karma_limit: yeterli_karma,
+        muhur: "",
+        oy_listesi: [],
+        gecerli_pusula: false,
+        gecerli_aday: {},
+        fcs_parti: 0,
+        fcs_sehir: focus_sehir,
+        zoom: 1.0,
+        zoom_timeout: false,
+        width: 320,
+        not: ""
+    },
+    created() {
+        window.addEventListener("resize", this.resize);
+    },
+    destroyed() {
+        window.removeEventListener("resize", this.resize);
+    },
+    methods: {
+        clearPage: function() {
+            if (confirm("Sayfayı temizlemek istediğinizden emin misiniz?")) {
+                this.emptyOylar();
+            }
+        },
+        print: function() {
+            if (this.gecerli_pusula == false) {
+                alert("Oyunuz geçerli değil");
                 return;
             }
-            var bolge_container = $('<td width="'+roww+'px" class="bolge-container-list">'+b+'</td>');
-            var bolge = $('<ol class="bolge"></ol>');
-            $(adaylar[p][b]).each(function(k,a){
-                var id = getAdayId(i,j,k);
-                var aday = $('<li class="aday" id="box-'+id+'"></li>');
-                var tmp = $('<input class="oylar" type="checkbox" id="oy-'+id+'" name="oy-'+id+'" value="'+id+'"> '+(k+1)+' '+a+'</input>');
-                tmp.click(tercihSay);
-                aday.append(tmp);
-                bolge.append(aday);
+            var opened = window.open("");
+            var that = this;
+            var html = "<ol style='list-style:none; font-family: monospace, sans-serif;'><li>Mühür --- "+this.hangiMuhur()+"</li>";
+            var oylar = {};
+            this.oy_listesi.forEach(function(oy) {
+                addRemove(oylar,[oy['parti'],oy['sehir'],oy['aday']]);
             });
-            bolge_container.append(bolge);
-            row.append(bolge_container);
-        });
-        table.append(row);
-    });
-    $("#container").append(table);
-}
-
-function oyTemizle() {
-    $('.parti-container-list').css("background-color","transparent");
-    $(oylar).each(function(i,oy){
-        $('#box-'+oy).css("background-color","transparent");
-    });
-    oyTuru.html('');
-    oySayisi.html('');
-    goySayisi.html('');
-    tercihSay();
-}
-
-function isParti(p) {
-    var i;
-    for (i=0; i<oylar.length; i++) {
-        if (oylar[i].charAt(0)==p) return true;
-    }
-    return false;
-}
-
-function isSehir(b) {
-    var i;
-    for (i=0; i<oylar.length; i++) {
-        if (oylar[i].charAt(1)==b) return true;
-    }
-    return false;
-}
-
-function isPartiSehir(p,b) {
-    var i;
-    for (i=0; i<oylar.length; i++) {
-        if (oylar[i].charAt(0)==p && oylar[i].charAt(1)==b) return true;
-    }
-    return false;
-}
-
-function isAday(oy) {
-    return $.inArray(oy,oylar)!=-1;
-}
-
-function layOutList() {
-    console.dir(oylar);
-    var parti_container = $('<ol></ol>');
-    $(partiler).each(function(i,p){
-        console.log(p);
-        var id_p = getId(i);
-        if (!(p in adaylar) || !isParti(id_p))
-            return;
-        var parti = $('<li></li>');
-        parti.append($('<span>'+($.inArray(id_p,oylar)!=-1?'[+]&nbsp;':'')+p+'</span>'));
-        $(bolgeler).each(function(j,b){
-            console.log(b);
-            var id_b = getId(j);
-            if (!(b in adaylar[p]) || !isPartiSehir(id_p,id_b))
-                return;
-            var bolge_container = $('<ol><li>'+b+'</li></ol>');
-            var bolge = $('<ol></ol>');
-            $(adaylar[p][b]).each(function(k,a){
-                console.log(a);
-                var id = getAdayId(i,j,k);
-                if (!isAday(id))
-                    return;
-                var aday = $('<li></li>');
-                var tmp = $('<span> [+]&nbsp;'+(k+1)+' '+a+'</span>');
-                aday.append(tmp);
-                bolge.append(aday);
+            this.parti_listesi.forEach(function(parti) {
+                that.sehir_listesi.forEach(function(sehir) {
+                    if (!that.aday_listesi[parti].hasOwnProperty(sehir)) { return; }
+                    that.aday_listesi[parti][sehir].forEach(function(aday,index) {
+                        if (oylar.hasOwnProperty(parti) &&
+                            oylar[parti].hasOwnProperty(sehir) && 
+                            oylar[parti][sehir].hasOwnProperty(aday) &&
+                            that.gecerliAday(parti,sehir,aday)) {
+                                html += "<li>Tercih --- "+parti+" --- "+sehir+" --- "+String(index+1)+". "+aday+"</li>";
+                        }
+                    })
+                })
+            })
+            html += "</ol>";
+            opened.document.write("<html><head><title>KKTC Seçimler</title></head><body>"+html+"</body></html>");
+        },
+        resize: function(e) {
+            var that = this;
+            if (this.zoom_timeout) { return; }
+            this.zoom_timeout = setTimeout(function() { 
+                that.zoom = Math.min(2.0, document.documentElement.clientWidth / that.width);
+                clearTimeout(that.zoom_timeout);
+                that.zoom_timeout = false;
+            }, 100);
+        },
+        gecerliAday: function(parti,sehir,aday) {
+            addRemove(this.gecerli_aday,[parti,sehir]);
+            return this.gecerli_aday[parti][sehir].hasOwnProperty(aday) && this.gecerli_aday[parti][sehir][aday];
+        },
+        gecerliAdaySay: function() {
+            var that = this;
+            var gecerli = 0;
+            Object.keys(this.gecerli_aday).forEach(function(parti){
+                Object.keys(that.gecerli_aday[parti]).forEach(function(sehir){
+                    Object.keys(that.gecerli_aday[parti][sehir]).forEach(function(aday){
+                        gecerli += that.gecerliAday(parti,sehir,aday);
+                    })
+                })
             });
-            bolge_container.append(bolge);
-            parti.append(bolge_container);
-        });
-        parti_container.append(parti);
-    });
-    $("#printout").html(parti_container);
-}
-
-$(document).ready(function() {
-    oyTuru = $('#oyTuru');
-    oySayisi = $('#tercih');
-    goySayisi = $('#gecerlitercih');
-    var buton1 = $('#yazdir');
-    var buton2 = $('#kontrol');
-    buton1.click(function(e){
-        flagB = !flagB;
-        $("#messages").html("");
-        if (flagB) {
-            buton1.css("display","inherit");
-            $("#messages").css("display","inherit");
-            $("#container").css("display","inherit");
-            $("#printout").css("display","none");
-            return;
+            return gecerli;
+        },
+        toplamTercih: function(parti,sehir) {
+            var that = this;
+            var toplam = 0;
+            this.oy_listesi.forEach(function(oy) {
+                if (sehir=="" && parti=="") { toplam += 1; }
+                else if (sehir=="" && oy['parti']==parti) { toplam += 1; }
+                else if (parti=="" && oy['sehir']==sehir) { toplam += 1; }
+                else if (oy['parti']==parti && oy['sehir']==sehir) { toplam += 1; }
+            });
+            return toplam;
+        },
+        hangiParti: function(parti,sehir) {
+            var that = this;
+            var toplam = {};
+            this.oy_listesi.forEach(function(oy) {
+                if (sehir=="" && parti=="") { toplam[oy['parti']] = 1; }
+                else if (sehir=="" && oy['parti']==parti) { toplam[oy['sehir']] = 1; }
+                else if (parti=="" && oy['sehir']==sehir) { toplam[oy['parti']] = 1; }
+                else if (oy['parti']==parti && oy['sehir']==sehir) { return 1; }
+            });
+            return Object.keys(toplam);
+        },
+        gecerliMuhur: function() {
+            return this.muhur!="";
+        },
+        gecerliSehir: function(sehir,gecerli) {
+            var j;
+            for (j=0; j<this.oy_listesi.length; j++) {
+                var oy = this.oy_listesi[j];
+                if (sehir=="" || oy['sehir']==sehir) {
+                    addRemove(this.gecerli_aday,[oy['parti'],oy['sehir']]);
+                    this.gecerli_aday[oy['parti']][oy['sehir']][oy['aday']] = gecerli;
+                }
+            }
+        },
+        oyKontrol: function() {
+            var that = this;
+            if (!this.gecerliMuhur() && this.oy_listesi.length==0) {
+                /* Bos */
+                this.gecerli_pusula = false;
+                this.gecerli_aday = {};
+                this.not = "Oy kullanmadınız";
+            } else if (this.gecerliMuhur() && this.oy_listesi.length==0) {
+                /* Muhur */
+                this.gecerli_pusula = true;
+                this.gecerli_aday = {};
+                this.not = "Oyunuz geçerlidir";
+            } else if (this.gecerliMuhur() && this.oy_listesi.length>0) {
+                /* Muhur + Tercih */
+                var p = this.hangiParti("","");
+                if (p.length>1 || p[0]!=this.muhur) {
+                    this.gecerli_aday = {};
+                    this.not = "Mühür vurup başka bir partiden tercih yaptınız";
+                } else {
+                    this.gecerli_pusula = true;
+                    this.gecerli_aday = {};
+                    this.not = ""
+                    var bazi = false;
+                    this.sehir_listesi.forEach(function(sehir) {
+                        var s = that.toplamTercih("",sehir);
+                        if (s == 0) { return; }
+                        else if (s == that.karma_sehir[sehir][0]) {
+                            that.gecerliSehir(sehir,true);
+                        } else {
+                            that.gecerliSehir(sehir,false);
+                            that.not += sehir+" bölgesinde "+(["az","fazla"][+(s>that.karma_sehir[sehir][0])])+" tercih yaptınız<br/>";
+                            bazi = true;
+                        }
+                    });
+                    if (bazi) {
+                        this.not += "Bazı tercihleriniz geçersizdir";
+                    } else {
+                        this.not += "Oyunuz geçerlidir";
+                    }
+                }
+            } else {
+                /* Karma */
+                this.gecerli_aday = {};
+                this.not = ""
+                this.sehir_listesi.forEach(function(sehir) {
+                    var s = that.toplamTercih("",sehir);
+                    if (s == 0) { return; }
+                    else if (s < that.karma_sehir[sehir][0]) {
+                        that.gecerliSehir(sehir,false);
+                        that.not += sehir+" bölgesinde az tercih yaptınız<br/>";
+                    } else if (s > that.karma_sehir[sehir][1]) {
+                        that.gecerliSehir(sehir,false);
+                        that.not += sehir+" bölgesinde fazla tercih yaptınız<br/>";
+                    } else {
+                        var p = that.hangiParti("",sehir);
+                        if (p.length==1 && s>1) {
+                            that.gecerliSehir(sehir,false);
+                            that.not += sehir+" bölgesinde tek partili tercih yaptınız<br/>";
+                        } else {
+                            that.gecerliSehir(sehir,true);
+                        }
+                    }
+                });
+                var gecerli = this.gecerliAdaySay();
+                if (gecerli < this.karma_limit[0]) {
+                    this.gecerli_pusula = false;
+                    this.gecerliSehir("",false);
+                    this.not += "En az "+String(this.karma_limit[0])+" geçerli tercih yapmalısınız";
+                } else if (gecerli > this.karma_limit[1]) {
+                    this.gecerli_pusula = false;
+                    this.not += "En fazla "+String(this.karma_limit[1])+" geçerli tercih yapabilirsiniz";
+                } else {
+                    this.gecerli_pusula = true;
+                    this.not += "Oyunuz geçerlidir";
+                }
+            }
+        },
+        focuSehir: function(sehir) {
+            this.fcs_sehir[sehir] = !this.fcs_sehir[sehir];
+        },
+        focuParti: function(parti) {
+            return this.parti_listesi.indexOf(parti)==this.fcs_parti;
+        },
+        previousParti: function(change) {
+            if (change) {
+                this.fcs_parti -= 1;
+            } else {
+                return this.fcs_parti;
+            }
+        },
+        nextParti: function(change) {
+            if (change) {
+                this.fcs_parti += 1;
+            } else {
+                return this.fcs_parti < this.parti_listesi.length-1;
+            }
+        },
+        emptyOylar: function() {
+            var that = this;
+            this.oy_listesi = [];
+            this.muhur = "";
+            this.fcs_parti = 0;
+            this.sehir_listesi.forEach(function(sehir) {
+                that.fcs_sehir[sehir] = false;
+            })
+            this.gecerli_aday = {};
+            this.oyKontrol();
+            this.resize();
+        },
+        oyAddRemove: function(parti,sehir,aday) {
+            var i = this.indexOf(parti,sehir,aday);
+            if (i!=-1) {
+                this.oy_listesi.splice(i,1);
+            } else {
+                this.oy_listesi.push({
+                    'parti': parti,
+                    'sehir': sehir,
+                    'aday': aday
+                });
+            }
+            this.oyKontrol();
+        },
+        indexOf: function(parti,sehir,aday) {
+            var i;
+            for (i=0; i<this.oy_listesi.length; i++) {
+                if (this.oy_listesi[i]['parti']==parti && 
+                    this.oy_listesi[i]['sehir']==sehir &&
+                    this.oy_listesi[i]['aday']==aday) {
+                        return i;
+                    }
+            }
+            return -1;
+        },
+        partiMi: function(parti) {
+            return parti!='Bağımsızlar';
+        },
+        secilmisMi: function(parti,sehir,aday) {
+            return this.indexOf(parti,sehir,aday)!=-1;
+        },
+        muhurVarMi: function(parti) {
+            return this.muhur == parti;
+        },
+        hangiMuhur: function() {
+            return this.muhur == "" ? "Yok" : this.muhur;
+        },
+        muhurAddRemove: function(parti) {
+            if (this.muhurVarMi(parti)) {
+                this.muhur = "";
+            } else if (this.partiMi(parti)) {
+                this.muhur = parti;
+            }
+            this.oyKontrol();
         }
-        buton1.css("display","none");
-        $("#messages").css("display","none");
-        $("#container").css("display","none");
-        $("#printout").css("display","inherit");
-        oyTopla();
-        layOutList();
-    });
-    buton2.click(function(e){
-        flagA = !flagA;
-        buton2.prop("value",(flagA?'Oyum geçerli mi?':'Yeniden başla'));
-        mesajTemizle();
-        $("#messages").css("display","inherit");
-        $("#container").css("display","inherit");
-        $("#printout").css("display","none");
-        if (flagA) {
-            oyTemizle();
-            $( ".oylar" ).removeClass('disabled');
-            buton1.css("display","none");
-            flagB = false;
-        } else {
-            $( ".oylar" ).addClass('disabled');
-            buton1.css("display","inherit");
-            flagB = true;
-            oyKontrol();
-            mesajYaz();
-        }
-    });
-    $("#disclaimer").html('<p>Bu site, 2022 KKTC Cumhuriyet Meclisi seçimlerinde seçmene yardımcı olmak amacıyla hazırlanmıştır. Hiçbir şekilde veri saklamamakta ve paylaşmamaktadır. Ayrıca, hiçbir şekilde resmi değer taşımamaktadır. Elde edilen sonuçların ilgili kanun/tüzük maddeleriyle uyuşmaması veya seçmeni yanlış yönlendirmesi halinde bu sitenin yapımcısı hiçbir şekilde bundan sorumlu tutulamaz.</p>');
-    layOutTable();
-    oyTemizle();
+    }
 });
 
+partVue.emptyOylar();
